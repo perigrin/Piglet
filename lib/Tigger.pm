@@ -1,14 +1,15 @@
 package Tigger;
 use strict;
 use Exporter::Lite;
-our @EXPORT = qw( get run );
+our @EXPORT = qw( get post run );
 
 use Piglet::Routes;
 use Piglet::Decorator;
 
 my $rs = Piglet::Routes->new;
 
-sub get { $rs->get($_[0], { cb => Piglet::Decorator->psgify($_[1]) }, $_[2]) }
+sub get  { $rs->get($_[0], { cb => Piglet::Decorator->psgify($_[1]) }, $_[2]) }
+sub post { $rs->post($_[0], { cb => Piglet::Decorator->psgify($_[1]) }, $_[2]) }
 
 sub run {
     return sub {
