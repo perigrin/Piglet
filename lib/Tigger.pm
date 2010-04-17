@@ -1,7 +1,7 @@
 package Tigger;
 use strict;
 use Exporter::Lite;
-our @EXPORT = qw( get post run );
+our @EXPORT = qw( get put post run );
 
 use Piglet::Routes;
 use Piglet::Decorator;
@@ -9,6 +9,7 @@ use Piglet::Decorator;
 my $rs = Piglet::Routes->new;
 
 sub get  { $rs->get($_[0], { cb => Piglet::Decorator->psgify($_[1]) }, $_[2]) }
+sub put  { $rs->put($_[0], { cb => Piglet::Decorator->psgify($_[1]) }, $_[2]) }
 sub post { $rs->post($_[0], { cb => Piglet::Decorator->psgify($_[1]) }, $_[2]) }
 
 sub run {

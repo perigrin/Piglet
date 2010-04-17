@@ -1,7 +1,7 @@
 package Piglet::Routes;
 use strict;
 use warnings;
-use Carp ();
+use Carp   ();
 use Encode ();
 use Router::Simple;
 use Plack::Util::Accessor qw(encoding);
@@ -9,7 +9,7 @@ use Plack::Util::Accessor qw(encoding);
 sub new {
     my $class = shift;
     bless {
-        rs => Router::Simple->new,
+        rs       => Router::Simple->new,
         encoding => "utf-8",
         @_,
     }, $class;
@@ -18,39 +18,44 @@ sub new {
 sub connect   { shift->{rs}->connect(@_) }
 sub submapper { shift->{rs}->submapper(@_) }
 
-sub get  { $_[0]->connect($_[1], $_[2], { method => [ 'GET', 'HEAD' ] }) }
-sub post { $_[0]->connect($_[1], $_[2], { method => [ 'POST' ] }) }
+sub get { $_[0]->connect( $_[1], $_[2], { method => [ 'GET', 'HEAD' ] } ) }
+sub post { $_[0]->connect( $_[1], $_[2], { method => ['POST'] } ) }
+sub put  { $_[0]->connect( $_[1], $_[2], { method => ['PUT'] } ) }
 
-sub any  {
+sub any {
     my $self = shift;
     my $method = ref $_[0] eq 'ARRAY' ? shift : undef;
-    $self->connect($_[0], $_[1], $method ? { method => $method } : {});
+    $self->connect( $_[0], $_[1], $method ? { method => $method } : {} );
 }
 
 sub on {
-    $_[0]->connect($_[2], $_[3], { method => $_[1] });
+    $_[0]->connect( $_[2], $_[3], { method => $_[1] } );
 }
 
 sub match {
-    my($self, $env) = @_;
+    my ( $self, $env ) = @_;
 
-    my($match, $route) = $self->{rs}->routematch($env);
+    my ( $match, $route ) = $self->{rs}->routematch($env);
     return unless $match;
 
     # magic path_info
-    if (exists $match->{path_info}) {
-        if ($env->{PATH_INFO} =~ s!^(.*?)(/?)\Q$match->{path_info}\E$!!) {
+    if ( exists $match->{path_info} ) {
+        if ( $env->{PATH_INFO} =~ s!^(.*?)(/?)\Q$match->{path_info}\E$!! ) {
             $env->{SCRIPT_NAME} .= $1;
-            $env->{PATH_INFO}    = $2 . $match->{path_info};
-        } else {
-            Carp::carp("Path '$env->{PATH_INFO}' does not end with path_info: '$match->{path_info}'");
+            $env->{PATH_INFO} = $2 . $match->{path_info};
+        }
+        else {
+            Carp::carp(
+"Path '$env->{PATH_INFO}' does not end with path_info: '$match->{path_info}'"
+            );
         }
     }
 
-    if ($self->{encoding}) {
-        for my $k (keys %$match) {
-            if ($match->{$k} =~ /[^[:ascii:]]/) {
-                $match->{$k} = Encode::decode($self->{encoding}, $match->{$k});
+    if ( $self->{encoding} ) {
+        for my $k ( keys %$match ) {
+            if ( $match->{$k} =~ /[^[:ascii:]]/ ) {
+                $match->{$k} =
+                  Encode::decode( $self->{encoding}, $match->{$k} );
             }
         }
     }
